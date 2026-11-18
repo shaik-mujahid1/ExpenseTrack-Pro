@@ -26,3 +26,6 @@ backend/.env
 # OS files
 .DS_Store
 Thumbs.db
+.neon
+node_modules/
+.env.local
