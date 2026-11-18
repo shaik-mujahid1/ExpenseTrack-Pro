@@ -1,0 +1,28 @@
+# Node dependencies & build
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+frontend/.env.local
+frontend/.env.*.local
+
+# Java & Maven target
+backend/target/
+backend/.tools/
+backend/data/
+*.mv.db
+*.trace.db
+
+# Environment and secrets
+.env
+*.env
+backend/.env
+
+# IDE files
+.idea/
+*.iml
+.vscode/
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
