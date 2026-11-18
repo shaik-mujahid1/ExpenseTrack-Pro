@@ -15,7 +15,7 @@ FROM eclipse-temurin:21-jre-jammy
 WORKDIR /app
 
 # Run as non-root user for security
-RUN groupadd -r appgroup && useradd -r -g appgroup appuser
+RUN groupadd -r appgroup && useradd -r -g appgroup appuser && mkdir -p /app/data && chown -R appuser:appgroup /app
 USER appuser
 
 # Copy jar from build stage
