@@ -40,7 +40,12 @@ public class ReportService {
         String currency = (user != null && user.getCurrency() != null) ? user.getCurrency() : "INR";
 
         if (includeExpense) {
-            List<Expense> expenses = expenseRepository.searchAndFilter(user, startDate, endDate, categoryId, null, null);
+            List<Expense> expenses;
+            if (startDate == null && endDate == null && categoryId == null) {
+                expenses = expenseRepository.findByUserOrderByDateDescCreatedAtDesc(user);
+            } else {
+                expenses = expenseRepository.searchAndFilter(user, startDate, endDate, categoryId, null, null);
+            }
             for (Expense e : expenses) {
                 records.add(new CsvRecord(
                         e.getId(),
@@ -56,7 +61,12 @@ public class ReportService {
         }
 
         if (includeIncome) {
-            List<Income> incomes = incomeRepository.searchAndFilter(user, startDate, endDate, categoryId, null);
+            List<Income> incomes;
+            if (startDate == null && endDate == null && categoryId == null) {
+                incomes = incomeRepository.findByUserOrderByDateDescCreatedAtDesc(user);
+            } else {
+                incomes = incomeRepository.searchAndFilter(user, startDate, endDate, categoryId, null);
+            }
             for (Income i : incomes) {
                 records.add(new CsvRecord(
                         i.getId(),

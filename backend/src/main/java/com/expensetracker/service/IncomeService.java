@@ -39,6 +39,10 @@ public class IncomeService {
         User user = userService.getCurrentAuthenticatedUser();
         String trimmedKeyword = (keyword != null && !keyword.trim().isEmpty()) ? keyword.trim() : null;
 
+        if (startDate == null && endDate == null && categoryId == null && trimmedKeyword == null) {
+            return getAllIncomes();
+        }
+
         return incomeRepository.searchAndFilter(user, startDate, endDate, categoryId, trimmedKeyword).stream()
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());

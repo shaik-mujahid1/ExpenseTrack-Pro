@@ -42,6 +42,10 @@ public class ExpenseService {
         String trimmedMethod = (paymentMethod != null && !paymentMethod.trim().isEmpty() && !"ALL".equalsIgnoreCase(paymentMethod))
                 ? paymentMethod.trim().toUpperCase() : null;
 
+        if (startDate == null && endDate == null && categoryId == null && trimmedMethod == null && trimmedKeyword == null) {
+            return getAllExpenses();
+        }
+
         return expenseRepository.searchAndFilter(user, startDate, endDate, categoryId, trimmedMethod, trimmedKeyword)
                 .stream()
                 .map(this::mapToResponse)

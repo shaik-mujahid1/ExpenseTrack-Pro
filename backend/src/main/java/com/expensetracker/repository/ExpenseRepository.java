@@ -24,8 +24,8 @@ public interface ExpenseRepository extends JpaRepository<Expense, Long> {
            "AND (:startDate IS NULL OR e.date >= :startDate) " +
            "AND (:endDate IS NULL OR e.date <= :endDate) " +
            "AND (:categoryId IS NULL OR e.category.id = :categoryId) " +
-           "AND (:paymentMethod IS NULL OR e.paymentMethod = :paymentMethod) " +
-           "AND (:keyword IS NULL OR LOWER(e.description) LIKE LOWER(CONCAT('%', :keyword, '%'))) " +
+           "AND (CAST(:paymentMethod AS string) IS NULL OR e.paymentMethod = :paymentMethod) " +
+           "AND (CAST(:keyword AS string) IS NULL OR LOWER(e.description) LIKE LOWER(CONCAT('%', CAST(:keyword AS string), '%'))) " +
            "ORDER BY e.date DESC, e.createdAt DESC")
     List<Expense> searchAndFilter(
             @Param("user") User user,

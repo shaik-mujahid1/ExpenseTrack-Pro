@@ -24,7 +24,7 @@ public interface IncomeRepository extends JpaRepository<Income, Long> {
            "AND (:startDate IS NULL OR i.date >= :startDate) " +
            "AND (:endDate IS NULL OR i.date <= :endDate) " +
            "AND (:categoryId IS NULL OR i.category.id = :categoryId) " +
-           "AND (:keyword IS NULL OR LOWER(i.description) LIKE LOWER(CONCAT('%', :keyword, '%'))) " +
+           "AND (CAST(:keyword AS string) IS NULL OR LOWER(i.description) LIKE LOWER(CONCAT('%', CAST(:keyword AS string), '%'))) " +
            "ORDER BY i.date DESC, i.createdAt DESC")
     List<Income> searchAndFilter(
             @Param("user") User user,
