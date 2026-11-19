@@ -161,13 +161,15 @@ public class ExpenseTrackerIntegrationTest {
 
     @Test
     void testReportCsvGeneration() {
-        ByteArrayInputStream csvStream = reportService.generateTransactionsCsv(
+        byte[] csvBytes = reportService.generateTransactionsCsv(
                 LocalDate.now().minusDays(30),
                 LocalDate.now(),
                 null,
                 "ALL"
         );
-        assertNotNull(csvStream);
-        assertTrue(csvStream.available() > 0);
+        assertNotNull(csvBytes);
+        assertTrue(csvBytes.length > 0);
+        String csvContent = new String(csvBytes, java.nio.charset.StandardCharsets.UTF_8);
+        assertTrue(csvContent.contains("ID,Date,Type,Description,Category,Payment Method,Amount,Currency"));
     }
 }

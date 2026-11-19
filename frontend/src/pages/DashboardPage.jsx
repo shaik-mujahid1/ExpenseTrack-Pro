@@ -16,6 +16,7 @@ import { Modal } from '../components/common/Modal';
 export const DashboardPage = () => {
   const [summary, setSummary] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [refreshing, setRefreshing] = useState(false);
 
   // Quick Action Modal States
@@ -39,11 +40,13 @@ export const DashboardPage = () => {
 
   const fetchSummary = async (showLoading = true) => {
     if (showLoading) setLoading(true);
+    setError(null);
     try {
       const data = await dashboardService.getSummary();
       setSummary(data);
     } catch (err) {
       console.error('Failed to load dashboard summary:', err);
+      setError(err.response?.data?.message || 'Connecting to backend... If the backend was inactive, it may take a few moments to spin up.');
     } finally {
       if (showLoading) setLoading(false);
       setRefreshing(false);
@@ -170,6 +173,18 @@ export const DashboardPage = () => {
           </button>
         </div>
       </div>
+
+      {error && (
+        <div className="p-4 bg-amber-50 border border-amber-200 rounded-2xl flex items-center justify-between">
+          <p className="text-xs font-semibold text-amber-800">{error}</p>
+          <button
+            onClick={() => fetchSummary(true)}
+            className="px-3 py-1 bg-amber-600 text-white rounded-xl text-xs font-bold hover:bg-amber-700"
+          >
+            Retry Connection
+          </button>
+        </div>
+      )}
 
       {/* KPI Cards */}
       <SummaryCards summary={summary} />

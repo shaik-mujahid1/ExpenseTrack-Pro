@@ -21,6 +21,7 @@ export const TransactionsPage = () => {
   const [transactions, setTransactions] = useState([]);
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   // Filters
   const [typeFilter, setTypeFilter] = useState('ALL'); // ALL, EXPENSE, INCOME
@@ -29,29 +30,40 @@ export const TransactionsPage = () => {
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
 
-  const loadData = async () => {
-    setLoading(true);
-    try {
-      const [expData, incData, cats] = await Promise.all([
-        expenseService.filter({
-          keyword,
-          categoryId: categoryId || undefined,
-          startDate: startDate || undefined,
-          endDate: endDate || undefined,
-        }),
-        incomeService.filter({
-          keyword,
-          categoryId: categoryId || undefined,
-          startDate: startDate || undefined,
-          endDate: endDate || undefined,
-        }),
-        categoryService.getAll(),
-      ]);
+  // Load categories once on mount
+  useEffect(() => {
+    categoryService.getAll().then(setCategories).catch(console.error);
+  }, []);
 
-      setCategories(cats);
+  const loadData = async (kw = keyword) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const filterParams = {
+        keyword: kw || undefined,
+        categoryId: categoryId || undefined,
+        startDate: startDate || undefined,
+        endDate: endDate || undefined,
+      };
+
+      let expData = [];
+      let incData = [];
+
+      if (typeFilter === 'ALL') {
+        const [expenses, incomes] = await Promise.all([
+          expenseService.filter(filterParams),
+          incomeService.filter(filterParams),
+        ]);
+        expData = expenses;
+        incData = incomes;
+      } else if (typeFilter === 'EXPENSE') {
+        expData = await expenseService.filter(filterParams);
+      } else if (typeFilter === 'INCOME') {
+        incData = await incomeService.filter(filterParams);
+      }
 
       let combined = [];
-      if (typeFilter === 'ALL' || typeFilter === 'EXPENSE') {
+      if (expData && expData.length > 0) {
         combined = combined.concat(
           expData.map((e) => ({
             ...e,
@@ -59,7 +71,7 @@ export const TransactionsPage = () => {
           }))
         );
       }
-      if (typeFilter === 'ALL' || typeFilter === 'INCOME') {
+      if (incData && incData.length > 0) {
         combined = combined.concat(
           incData.map((i) => ({
             ...i,
@@ -73,6 +85,7 @@ export const TransactionsPage = () => {
       setTransactions(combined);
     } catch (err) {
       console.error('Failed to load transactions:', err);
+      setError(err.response?.data?.message || 'Failed to connect to backend. Please retry.');
     } finally {
       setLoading(false);
     }
@@ -93,6 +106,7 @@ export const TransactionsPage = () => {
     setCategoryId('');
     setStartDate('');
     setEndDate('');
+    loadData('');
   };
 
   const handleExportCsv = async () => {
@@ -238,6 +252,16 @@ export const TransactionsPage = () => {
       <div className="bg-white rounded-2xl border border-slate-100 shadow-card overflow-hidden">
         {loading ? (
           <LoadingSpinner text="Loading transactions ledger..." />
+        ) : error ? (
+          <div className="p-8 text-center">
+            <p className="text-sm font-semibold text-rose-600 mb-2">{error}</p>
+            <button
+              onClick={() => loadData()}
+              className="px-4 py-2 bg-slate-900 text-white rounded-xl text-xs font-bold hover:bg-slate-800 transition-colors"
+            >
+              Retry
+            </button>
+          </div>
         ) : transactions.length === 0 ? (
           <EmptyState
             title="No transactions match your criteria"

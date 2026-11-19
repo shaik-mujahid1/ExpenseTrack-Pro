@@ -7,7 +7,6 @@ import com.expensetracker.repository.ExpenseRepository;
 import com.expensetracker.repository.IncomeRepository;
 import org.springframework.stereotype.Service;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
@@ -30,7 +29,7 @@ public class ReportService {
         this.userService = userService;
     }
 
-    public ByteArrayInputStream generateTransactionsCsv(LocalDate startDate, LocalDate endDate, Long categoryId, String type) {
+    public byte[] generateTransactionsCsv(LocalDate startDate, LocalDate endDate, Long categoryId, String type) {
         User user = userService.getCurrentAuthenticatedUser();
 
         List<CsvRecord> records = new ArrayList<>();
@@ -38,18 +37,20 @@ public class ReportService {
         boolean includeExpense = type == null || "ALL".equalsIgnoreCase(type) || "EXPENSE".equalsIgnoreCase(type);
         boolean includeIncome = type == null || "ALL".equalsIgnoreCase(type) || "INCOME".equalsIgnoreCase(type);
 
+        String currency = (user != null && user.getCurrency() != null) ? user.getCurrency() : "INR";
+
         if (includeExpense) {
             List<Expense> expenses = expenseRepository.searchAndFilter(user, startDate, endDate, categoryId, null, null);
             for (Expense e : expenses) {
                 records.add(new CsvRecord(
                         e.getId(),
-                        e.getDate().toString(),
+                        e.getDate() != null ? e.getDate().toString() : "",
                         "EXPENSE",
-                        e.getDescription(),
-                        e.getCategory().getName(),
-                        e.getPaymentMethod(),
-                        e.getAmount().toString(),
-                        user.getCurrency()
+                        e.getDescription() != null ? e.getDescription() : "",
+                        e.getCategory() != null ? e.getCategory().getName() : "General",
+                        e.getPaymentMethod() != null ? e.getPaymentMethod() : "CASH",
+                        e.getAmount() != null ? e.getAmount().toString() : "0.00",
+                        currency
                 ));
             }
         }
@@ -59,19 +60,23 @@ public class ReportService {
             for (Income i : incomes) {
                 records.add(new CsvRecord(
                         i.getId(),
-                        i.getDate().toString(),
+                        i.getDate() != null ? i.getDate().toString() : "",
                         "INCOME",
-                        i.getDescription(),
-                        i.getCategory().getName(),
+                        i.getDescription() != null ? i.getDescription() : "",
+                        i.getCategory() != null ? i.getCategory().getName() : "General",
                         "N/A",
-                        i.getAmount().toString(),
-                        user.getCurrency()
+                        i.getAmount() != null ? i.getAmount().toString() : "0.00",
+                        currency
                 ));
             }
         }
 
         // Sort by date descending
-        records.sort((a, b) -> b.date.compareTo(a.date));
+        records.sort((a, b) -> {
+            if (b.date == null) return -1;
+            if (a.date == null) return 1;
+            return b.date.compareTo(a.date);
+        });
 
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         try (PrintWriter writer = new PrintWriter(out, true, StandardCharsets.UTF_8)) {
@@ -80,20 +85,20 @@ public class ReportService {
 
             for (CsvRecord r : records) {
                 writer.println(String.format("%d,%s,%s,\"%s\",\"%s\",%s,%s,%s",
-                        r.id,
+                        r.id != null ? r.id : 0L,
                         escapeCsv(r.date),
                         escapeCsv(r.type),
                         escapeCsv(r.description),
                         escapeCsv(r.category),
                         escapeCsv(r.paymentMethod),
-                        r.amount,
+                        r.amount != null ? r.amount : "0.00",
                         escapeCsv(r.currency)
                 ));
             }
             writer.flush();
         }
 
-        return new ByteArrayInputStream(out.toByteArray());
+        return out.toByteArray();
     }
 
     private String escapeCsv(String val) {

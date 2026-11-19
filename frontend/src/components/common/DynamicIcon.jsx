@@ -1,7 +1,65 @@
 import React from 'react';
-import * as Icons from 'lucide-react';
+import {
+  Tag,
+  UtensilsCrossed,
+  ShoppingBag,
+  Car,
+  GraduationCap,
+  HeartPulse,
+  Film,
+  Receipt,
+  Plane,
+  User,
+  MoreHorizontal,
+  Briefcase,
+  Laptop,
+  TrendingUp,
+  Building2,
+  Gift,
+  Coins,
+  Home,
+  Coffee,
+  HelpCircle,
+  CreditCard,
+  Wallet,
+  ShieldCheck,
+  Calendar,
+  AlertCircle,
+  CheckCircle2,
+  FileSpreadsheet,
+} from 'lucide-react';
+
+const ICON_MAP = {
+  Tag,
+  UtensilsCrossed,
+  ShoppingBag,
+  Car,
+  GraduationCap,
+  HeartPulse,
+  Film,
+  Receipt,
+  Plane,
+  User,
+  MoreHorizontal,
+  Briefcase,
+  Laptop,
+  TrendingUp,
+  Building2,
+  Gift,
+  Coins,
+  Home,
+  Coffee,
+  HelpCircle,
+  CreditCard,
+  Wallet,
+  ShieldCheck,
+  Calendar,
+  AlertCircle,
+  CheckCircle2,
+  FileSpreadsheet,
+};
 
 export const DynamicIcon = ({ name, className = 'w-5 h-5', color = null }) => {
-  const IconComponent = Icons[name] || Icons.Tag || Icons.HelpCircle;
+  const IconComponent = ICON_MAP[name] || Tag;
   return <IconComponent className={className} style={color ? { color } : undefined} />;
 };
